@@ -268,6 +268,11 @@ main {
   background: rgba(255, 255, 255, 0.68);
 }
 
+.kanban-column.is-drag-over {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 2px var(--col-accent);
+}
+
 #a-fazer {
   --col-accent: #6b7a8f;
 }
@@ -339,6 +344,18 @@ main {
   border-radius: 13px;
   background: var(--surface);
   box-shadow: 0 1px 2px rgba(23, 32, 51, 0.04);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.kanban-card:hover {
+  border-color: var(--line-strong);
+}
+
+.kanban-card.is-dragging {
+  opacity: 0.4;
+  cursor: grabbing;
 }
 
 .kanban-card-title {

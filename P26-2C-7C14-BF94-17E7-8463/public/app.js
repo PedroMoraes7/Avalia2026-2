@@ -12,6 +12,9 @@
     avatar: AVATAR_PADRAO,
   };
 
+  const COLUNAS = ["a-fazer", "em-execucao", "concluido"];
+  const TIPO_DADOS_CARTAO = "text/plain";
+
   const prioridadeTexto = {
     baixa: "baixa",
     media: "média",
@@ -24,32 +27,40 @@
       titulo: "Definir as prioridades da semana",
       prioridade: "alta",
       coluna: "a-fazer",
+      posicao: 0,
     },
     {
       id: "tarefa-2",
       titulo: "Revisar os textos do portfólio",
       prioridade: "media",
       coluna: "a-fazer",
+      posicao: 1,
     },
     {
       id: "tarefa-3",
       titulo: "Ajustar o layout responsivo do projeto",
       prioridade: "alta",
       coluna: "em-execucao",
+      posicao: 0,
     },
     {
       id: "tarefa-4",
       titulo: "Responder as mensagens do Discord",
       prioridade: "baixa",
       coluna: "em-execucao",
+      posicao: 1,
     },
     {
       id: "tarefa-5",
       titulo: "Publicar as notas da entrega",
       prioridade: "media",
       coluna: "concluido",
+      posicao: 0,
     },
   ];
+
+  let idCartaoArrastado = null;
+  let colunaDestacada = null;
 
   function renderDiscordProfile() {
     const avatarEl = document.getElementById("discordAvatar");
@@ -79,10 +90,53 @@
     dataEl.textContent = texto.charAt(0).toUpperCase() + texto.slice(1);
   }
 
+  function encontrarTarefa(idCartao) {
+    return tarefas.find((tarefa) => tarefa.id === idCartao) || null;
+  }
+
+  function tarefasDaColuna(coluna) {
+    return tarefas
+      .filter((tarefa) => tarefa.coluna === coluna)
+      .sort((a, b) => a.posicao - b.posicao);
+  }
+
+  function proximaPosicao(coluna) {
+    const cartoes = tarefasDaColuna(coluna);
+    if (cartoes.length === 0) return 0;
+    return cartoes[cartoes.length - 1].posicao + 1;
+  }
+
+  function normalizarPosicoes(coluna) {
+    tarefasDaColuna(coluna).forEach((tarefa, indice) => {
+      tarefa.posicao = indice;
+    });
+  }
+
+  function moverCartao(idCartao, colunaDestino) {
+    if (!COLUNAS.includes(colunaDestino)) return false;
+
+    const tarefa = encontrarTarefa(idCartao);
+    if (!tarefa || tarefa.coluna === colunaDestino) return false;
+
+    const colunaOrigem = tarefa.coluna;
+    const novaPosicao = proximaPosicao(colunaDestino);
+
+    tarefa.coluna = colunaDestino;
+    tarefa.posicao = novaPosicao;
+
+    normalizarPosicoes(colunaDestino);
+    normalizarPosicoes(colunaOrigem);
+
+    return true;
+  }
+
   function criarCartao(tarefa) {
     const cartao = document.createElement("article");
     cartao.className = "kanban-card";
+    cartao.dataset.id = tarefa.id;
     cartao.dataset.prioridade = tarefa.prioridade;
+    cartao.draggable = true;
+    cartao.title = "Arraste para mover de coluna";
 
     const titulo = document.createElement("h3");
     titulo.className = "kanban-card-title";
@@ -110,7 +164,7 @@
   function renderBoard() {
     document.querySelectorAll(".card-list[data-column]").forEach((lista) => {
       const coluna = lista.getAttribute("data-column");
-      const cartoes = tarefas.filter((tarefa) => tarefa.coluna === coluna);
+      const cartoes = tarefasDaColuna(coluna);
       const fragmento = document.createDocumentFragment();
 
       cartoes.forEach((tarefa) => {
@@ -129,7 +183,7 @@
 
     document.querySelectorAll("[data-count]").forEach((contador) => {
       const coluna = contador.getAttribute("data-count");
-      const total = tarefas.filter((tarefa) => tarefa.coluna === coluna).length;
+      const total = tarefasDaColuna(coluna).length;
       contador.textContent = String(total);
       contador.setAttribute(
         "aria-label",
@@ -141,7 +195,111 @@
     if (totalEl) totalEl.textContent = String(tarefas.length);
   }
 
+  function elementoDaColuna(alvo) {
+    return alvo instanceof Element ? alvo.closest(".kanban-column") : null;
+  }
+
+  function elementoDoCartao(alvo) {
+    return alvo instanceof Element ? alvo.closest(".kanban-card") : null;
+  }
+
+  function destacarColuna(coluna) {
+    if (colunaDestacada === coluna) return;
+
+    if (colunaDestacada) {
+      colunaDestacada.classList.remove("is-drag-over");
+    }
+
+    colunaDestacada = coluna;
+    coluna.classList.add("is-drag-over");
+  }
+
+  function limparDestaques() {
+    document.querySelectorAll(".kanban-column.is-drag-over").forEach((coluna) => {
+      coluna.classList.remove("is-drag-over");
+    });
+    colunaDestacada = null;
+  }
+
+  function iniciarArrasto(event) {
+    const cartao = elementoDoCartao(event.target);
+    if (!cartao || !cartao.dataset.id) return;
+
+    idCartaoArrastado = cartao.dataset.id;
+    cartao.classList.add("is-dragging");
+
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData(TIPO_DADOS_CARTAO, idCartaoArrastado);
+    }
+  }
+
+  function permitirSoltura(event) {
+    const coluna = elementoDaColuna(event.target);
+    if (!coluna) return;
+
+    event.preventDefault();
+
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = "move";
+    }
+
+    destacarColuna(coluna);
+  }
+
+  function sairDaColuna(event) {
+    const coluna = elementoDaColuna(event.target);
+    if (!coluna) return;
+
+    const relacionado = event.relatedTarget;
+    if (relacionado instanceof Node && coluna.contains(relacionado)) return;
+
+    coluna.classList.remove("is-drag-over");
+    if (colunaDestacada === coluna) {
+      colunaDestacada = null;
+    }
+  }
+
+  function finalizarArrasto() {
+    idCartaoArrastado = null;
+
+    document.querySelectorAll(".kanban-card.is-dragging").forEach((cartao) => {
+      cartao.classList.remove("is-dragging");
+    });
+
+    limparDestaques();
+  }
+
+  function soltarCartao(event) {
+    const coluna = elementoDaColuna(event.target);
+    if (!coluna) return;
+
+    event.preventDefault();
+
+    const idTransferido = event.dataTransfer
+      ? event.dataTransfer.getData(TIPO_DADOS_CARTAO)
+      : "";
+    const idCartao = idTransferido || idCartaoArrastado;
+    const moveu = idCartao ? moverCartao(idCartao, coluna.id) : false;
+
+    finalizarArrasto();
+
+    if (moveu) renderBoard();
+  }
+
+  function configurarArrastoDeCartoes() {
+    const quadro = document.querySelector(".kanban-board");
+    if (!quadro) return;
+
+    quadro.addEventListener("dragstart", iniciarArrasto);
+    quadro.addEventListener("dragover", permitirSoltura);
+    quadro.addEventListener("dragleave", sairDaColuna);
+    quadro.addEventListener("drop", soltarCartao);
+    quadro.addEventListener("dragend", finalizarArrasto);
+  }
+
   renderDiscordProfile();
   renderTodayLabel();
   renderBoard();
+  configurarArrastoDeCartoes();
 })();
