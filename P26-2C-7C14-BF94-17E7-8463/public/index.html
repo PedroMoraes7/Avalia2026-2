@@ -3,48 +3,92 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Projeto #9 — P26-2C-7C14-BF94-17E7-8463</title>
-  <link rel="stylesheet" href="/styles.css">
+  <meta name="color-scheme" content="light">
+  <title>Quadro Kanban Pessoal — P26-2C-7C14-BF94-17E7-8463</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="topbar">
     <div class="topbar-inner">
-      <div>
-        <strong>Projeto #9: Quadro Kanban Pessoal</strong>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-copy">
+          <strong>Quadro Kanban</strong>
+          <span>Projeto #9</span>
+        </span>
       </div>
-      <div class="discord-badge" id="discordProfile">
-        <a id="discordLoginLink" href="/api/auth/discord" style="color:inherit;text-decoration:none;">
-          <span id="discordUserText">Entrar com Discord OAuth2</span>
-        </a>
+
+      <div class="account">
+        <div class="discord-profile" aria-label="Perfil do Discord">
+          <img
+            class="discord-avatar"
+            id="discordAvatar"
+            src="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20width='64'%20height='64'%20rx='32'%20fill='%233155e7'/%3E%3Ctext%20x='32'%20y='42'%20text-anchor='middle'%20font-family='Arial,sans-serif'%20font-size='26'%20font-weight='700'%20fill='%23ffffff'%3EP%3C/text%3E%3C/svg%3E"
+            alt="Avatar de PEDRO"
+            width="32"
+            height="32">
+          <span class="discord-meta">
+            <strong class="discord-name" id="discordUserName">PEDRO</strong>
+            <span class="discord-id" id="discordUserId">discord_8463</span>
+          </span>
+        </div>
+        <a class="login-btn" id="discordLoginLink" href="/api/auth/discord">Entrar com Discord</a>
       </div>
     </div>
   </header>
 
   <main>
-    <section class="card">
-      <span class="pill">Projeto Oficial #9</span>
-      <h1>Quadro Kanban Pessoal</h1>
-      <p class="desc">Construa uma ferramenta de gestão de tarefas baseada no método Kanban, estruturada nas colunas "A Fazer", "Em Execução" e "Concluído". O cliente deve ser programado em JavaScript vanilla utilizando a HTML5 Drag and Drop API nativa para permitir a movimentação fluida dos cartões entre as colunas, sem uso de bibliotecas externas. O isolamento dos dados é garantido pelo fluxo OAuth2 do Discord: ao carregar a página, o frontend busca nas Cloudflare Pages Functions apenas os cartões pertencentes àquele user_id. Cada movimentação de coluna, edição de texto ou alteração de prioridade dispara uma chamada assíncrona (PATCH/PUT) que atualiza a posição e o estado do cartão diretamente nas tabelas do Cloudflare D1.</p>
-
-      <div class="form-row">
-        <input class="input-text" id="recordInput" type="text" placeholder="Digite um registro para gravar na Cloudflare Function + D1...">
-        <button class="btn-primary" id="sendBtn" type="button">Registrar no Cloudflare D1</button>
+    <section class="board-intro" aria-labelledby="boardTitle">
+      <div class="intro-copy">
+        <h1 id="boardTitle">Meu quadro</h1>
+        <p class="lede">Um panorama simples do que precisa ser feito, do que está em andamento e do que já foi concluído.</p>
       </div>
-      <div id="statusMessage" style="font-size:0.88rem;font-weight:700;color:#166534;margin-bottom:0.75rem;"></div>
+      <div class="board-meta">
+        <p class="board-total"><strong id="boardTotal">5</strong> tarefas no quadro</p>
+        <p class="board-date" id="todayLabel">Hoje</p>
+      </div>
     </section>
 
-    <section class="card">
-      <h2 style="font-size:1.15rem;font-weight:800;margin-bottom:0.85rem;">Registros Persistidos (Cloudflare Pages Functions + D1)</h2>
-      <ul class="records-list" id="recordsList">
-        <li>Carregando status da API serverless...</li>
-      </ul>
-    </section>
+    <div class="kanban-board">
+      <section class="kanban-column" id="a-fazer" aria-labelledby="a-fazer-titulo">
+        <header class="column-header">
+          <div class="column-heading">
+            <span class="column-dot" aria-hidden="true"></span>
+            <h2 id="a-fazer-titulo">A Fazer</h2>
+          </div>
+          <span class="column-count" data-count="a-fazer" aria-label="0 tarefas">0</span>
+        </header>
+        <div class="card-list" data-column="a-fazer"></div>
+      </section>
+
+      <section class="kanban-column" id="em-execucao" aria-labelledby="em-execucao-titulo">
+        <header class="column-header">
+          <div class="column-heading">
+            <span class="column-dot" aria-hidden="true"></span>
+            <h2 id="em-execucao-titulo">Em Execução</h2>
+          </div>
+          <span class="column-count" data-count="em-execucao" aria-label="0 tarefas">0</span>
+        </header>
+        <div class="card-list" data-column="em-execucao"></div>
+      </section>
+
+      <section class="kanban-column" id="concluido" aria-labelledby="concluido-titulo">
+        <header class="column-header">
+          <div class="column-heading">
+            <span class="column-dot" aria-hidden="true"></span>
+            <h2 id="concluido-titulo">Concluído</h2>
+          </div>
+          <span class="column-count" data-count="concluido" aria-label="0 tarefas">0</span>
+        </header>
+        <div class="card-list" data-column="concluido"></div>
+      </section>
+    </div>
   </main>
 
   <footer id="projectFooter">
     Chave Única de Auditoria: <code>P26-2C-7C14-BF94-17E7-8463</code> · Turma 2C · Licenciado sob MIT
   </footer>
 
-  <script src="/app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

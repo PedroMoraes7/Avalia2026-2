@@ -1,7 +1,21 @@
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+:root {
+  --ink: #16202f;
+  --ink-soft: #46566c;
+  --muted: #5c6b80;
+  --paper: #f2f6fb;
+  --surface: #ffffff;
+  --line: #d9e2ee;
+  --line-strong: #c2cfdf;
+  --accent: #3155e7;
+  --accent-ink: #243fbd;
 }
 
 /* Regra estrita de tipografia: ZERO sombras em textos */
@@ -14,136 +28,494 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-  background-color: #eef2f6;
-  color: #0f172a;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+  background-color: var(--paper);
+  background-image: radial-gradient(rgba(101, 125, 159, 0.16) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--ink);
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid rgba(49, 85, 231, 0.35);
+  outline-offset: 3px;
+}
+
+/* Cabeçalho */
+
 .topbar {
-  background: #ffffff;
-  border-bottom: 1px solid #dce4ef;
-  padding: 0.9rem 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
 }
 
 .topbar-inner {
-  max-width: 960px;
+  max-width: 1180px;
   margin: 0 auto;
+  padding: 0.85rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  flex-wrap: wrap;
 }
 
-.discord-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #1d4ed8;
-  padding: 0.4rem 0.9rem;
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-main {
-  flex: 1;
-  max-width: 960px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 2rem 1.25rem;
-}
-
-.card {
-  background: #ffffff;
-  border: 1px solid #dce4ef;
-  border-radius: 20px;
-  padding: 1.75rem;
-  margin-bottom: 1.25rem;
-  box-shadow: 0 10px 26px -10px rgba(15, 23, 42, 0.07);
-}
-
-.pill {
-  display: inline-block;
-  background: #dcfce7;
-  border: 1px solid #bbf7d0;
-  color: #166534;
-  border-radius: 999px;
-  padding: 0.3rem 0.85rem;
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  margin-bottom: 0.75rem;
-}
-
-h1 {
-  font-size: 1.65rem;
-  font-weight: 800;
-  margin-bottom: 0.5rem;
-}
-
-.desc {
-  color: #475569;
-  font-size: 0.95rem;
-  margin-bottom: 1.25rem;
-}
-
-.form-row {
+.brand {
   display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
 }
 
-.input-text {
-  flex: 1;
-  min-width: 220px;
-  padding: 0.75rem 1rem;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 12px;
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  padding: 9px 8px;
+  border-radius: 11px;
+  background: var(--ink);
+}
+
+.brand-mark span {
+  width: 5px;
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+.brand-mark span:nth-child(1) {
+  height: 11px;
+  opacity: 0.55;
+}
+
+.brand-mark span:nth-child(2) {
+  height: 17px;
+  opacity: 0.8;
+}
+
+.brand-mark span:nth-child(3) {
+  height: 23px;
+}
+
+.brand-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  min-width: 0;
+}
+
+.brand-copy strong {
   font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.brand-copy span {
+  color: var(--muted);
+  font-size: 0.7rem;
   font-weight: 600;
 }
 
-.btn-primary {
-  background: #0f172a;
-  color: #ffffff;
-  border: none;
+.account {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.discord-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.26rem 0.7rem 0.26rem 0.3rem;
+  border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 0.75rem 1.4rem;
-  font-size: 0.92rem;
-  font-weight: 800;
-  cursor: pointer;
+  background: #f7f9fc;
 }
 
-.btn-primary:hover {
-  background: #1e293b;
+.discord-avatar {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #dbe6f4;
 }
 
-.records-list {
-  list-style: none;
+.discord-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  line-height: 1.2;
+  min-width: 0;
 }
 
-.records-list li {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 0.85rem 1rem;
-  font-size: 0.9rem;
+.discord-name {
+  font-size: 0.8rem;
+  font-weight: 800;
 }
+
+.discord-id {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.login-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 0.95rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.login-btn:hover {
+  background: var(--accent-ink);
+}
+
+/* Conteúdo */
+
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 2.4rem 1.5rem 3rem;
+}
+
+.board-intro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 1.6rem;
+}
+
+.intro-copy {
+  min-width: 0;
+}
+
+.board-intro h1 {
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  font-size: clamp(2.1rem, 4vw, 3.15rem);
+  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  max-width: 58ch;
+  margin-top: 0.65rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.board-meta {
+  flex: none;
+  padding-bottom: 0.25rem;
+  text-align: right;
+}
+
+.board-total {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+
+.board-total strong {
+  margin-right: 0.15rem;
+  color: var(--ink);
+  font-size: 1.3rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.board-date {
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+/* Quadro */
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.1rem;
+  align-items: stretch;
+}
+
+.kanban-column {
+  --col-accent: #6b7a8f;
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+  padding: 0.95rem 0.95rem 1.1rem;
+  border: 1px solid var(--line);
+  border-top: 3px solid var(--col-accent);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+#a-fazer {
+  --col-accent: #6b7a8f;
+}
+
+#em-execucao {
+  --col-accent: #3155e7;
+}
+
+#concluido {
+  --col-accent: #0f8a5f;
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  padding: 0.1rem 0.15rem 0.8rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.column-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.column-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--col-accent);
+}
+
+.column-heading h2 {
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.005em;
+}
+
+.column-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.6rem;
+  height: 1.45rem;
+  padding: 0 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.kanban-card {
+  padding: 0.9rem 0.95rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(23, 32, 51, 0.04);
+}
+
+.kanban-card-title {
+  color: var(--ink);
+  font-size: 0.94rem;
+  line-height: 1.38;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  text-wrap: pretty;
+}
+
+.kanban-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.priority-label {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.priority-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.priority-pill::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.priority-pill--alta {
+  border-color: #f8c9c5;
+  background: #fee4e2;
+  color: #a12820;
+}
+
+.priority-pill--media {
+  border-color: #f3ddb0;
+  background: #fdf0d5;
+  color: #8a530f;
+}
+
+.priority-pill--baixa {
+  border-color: #b6e7d5;
+  background: #dcf5ea;
+  color: #106b4d;
+}
+
+.column-empty {
+  padding: 1rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+/* Rodapé */
 
 footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-weight: 600;
   text-align: center;
-  padding: 1.25rem;
-  background: #ffffff;
-  border-top: 1px solid #dce4ef;
-  font-size: 0.84rem;
+}
+
+footer code {
+  display: inline-block;
+  padding: 0.12rem 0.38rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #edf2f9;
+  color: var(--ink);
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 0.92em;
   font-weight: 700;
-  color: #334155;
+}
+
+/* Responsivo */
+
+@media (max-width: 900px) {
+  .kanban-board {
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+
+  .kanban-column {
+    min-height: 0;
+  }
+
+  .board-intro {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .board-meta {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-bottom: 0;
+    text-align: left;
+  }
+
+  .board-date {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar-inner {
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+  }
+
+  .account {
+    gap: 0.5rem;
+  }
+
+  .discord-profile {
+    padding-right: 0.55rem;
+  }
+
+  .discord-id {
+    display: none;
+  }
+
+  .login-btn {
+    min-height: 36px;
+    padding: 0 0.75rem;
+    font-size: 0.74rem;
+  }
+
+  main {
+    padding: 1.6rem 1rem 2.25rem;
+  }
+
+  .board-intro h1 {
+    font-size: 2.1rem;
+  }
+
+  .lede {
+    font-size: 0.9rem;
+  }
+
+  .kanban-column {
+    padding: 0.8rem;
+  }
+}
+
+@media (max-width: 430px) {
+  .topbar-inner {
+    flex-direction: column;
+  }
+
+  .account {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
