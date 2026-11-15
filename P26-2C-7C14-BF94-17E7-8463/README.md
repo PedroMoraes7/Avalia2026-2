@@ -4,7 +4,7 @@
 - **Estudante:** PEDRO HENRIQUE MORAES PROENCA
 - **Turma:** 2C
 - **Chave Única:** `P26-2C-7C14-BF94-17E7-8463`
-- **URL_CLOUDFLARE:** `https://p26-2c-7c14-bf94-17e7-8463.pages.dev` *(Atualize com a URL pública real do seu deploy na Cloudflare antes de abrir o Pull Request)*
+- **URL_CLOUDFLARE:** `https://p26-2c-7c14-bf94-17e7-8463.pages.dev`
 
 ---
 

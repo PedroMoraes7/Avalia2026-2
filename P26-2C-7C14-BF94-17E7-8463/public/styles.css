@@ -204,6 +204,32 @@ button:focus-visible {
   background: var(--accent-ink);
 }
 
+.logout-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #eef3fa;
+  border-color: var(--line-strong);
+}
+
+.logout-btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 /* Conteúdo */
 
 main {
@@ -764,6 +790,12 @@ footer code {
   }
 
   .login-btn {
+    min-height: 36px;
+    padding: 0 0.75rem;
+    font-size: 0.74rem;
+  }
+
+  .logout-btn {
     min-height: 36px;
     padding: 0 0.75rem;
     font-size: 0.74rem;

@@ -25,6 +25,7 @@
   const nomeEl = document.getElementById("discordUserName");
   const userIdEl = document.getElementById("discordUserId");
   const loginLinkEl = document.getElementById("discordLoginLink");
+  const logoutBtnEl = document.getElementById("discordLogoutBtn");
   const statusEl = document.getElementById("appStatus");
   const loginPromptEl = document.getElementById("loginPrompt");
   const boardAreaEl = document.getElementById("boardArea");
@@ -178,6 +179,7 @@
     usuario = dados;
 
     if (perfilEl) perfilEl.hidden = false;
+    if (logoutBtnEl) logoutBtnEl.hidden = false;
     if (loginLinkEl) loginLinkEl.hidden = true;
     if (boardAreaEl) boardAreaEl.hidden = false;
     if (loginPromptEl) loginPromptEl.hidden = true;
@@ -202,6 +204,11 @@
     cartoes = [];
 
     if (perfilEl) perfilEl.hidden = true;
+    if (logoutBtnEl) {
+      logoutBtnEl.hidden = true;
+      logoutBtnEl.disabled = false;
+      logoutBtnEl.textContent = "Sair";
+    }
     if (loginLinkEl) loginLinkEl.hidden = false;
     if (boardAreaEl) boardAreaEl.hidden = true;
     if (loginPromptEl) loginPromptEl.hidden = false;
@@ -216,6 +223,32 @@
       "Sua sessão expirou. Entre novamente com o Discord.",
       "erro"
     );
+  }
+
+  async function aoSair() {
+    if (logoutBtnEl && logoutBtnEl.disabled) return;
+
+    if (logoutBtnEl) {
+      logoutBtnEl.disabled = true;
+      logoutBtnEl.textContent = "Saindo...";
+    }
+    definirMensagem("Encerrando sessão...", "carregando", { ariaBusy: true });
+
+    const resultado = await chamarApi("/api/auth/logout", { metodo: "POST" });
+
+    if (!resultado.ok) {
+      if (logoutBtnEl) {
+        logoutBtnEl.disabled = false;
+        logoutBtnEl.textContent = "Sair";
+      }
+      definirMensagem(resultado.mensagem, "erro");
+      return;
+    }
+
+    mostrarNaoLogado();
+    definirMensagem("Você saiu da sua conta.", "sucesso", {
+      autoLimpar: true,
+    });
   }
 
   function aoFalharAvatar() {
@@ -960,6 +993,7 @@
     }
 
     if (avatarEl) avatarEl.addEventListener("error", aoFalharAvatar);
+    if (logoutBtnEl) logoutBtnEl.addEventListener("click", aoSair);
   }
 
   async function iniciar() {

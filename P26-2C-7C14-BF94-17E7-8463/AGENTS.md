@@ -1,34 +1,30 @@
 # Documentação de Engenharia de Agentes e Harness (P26-2C-7C14-BF94-17E7-8463)
 
-> **Requisito da Rubrica (25 pontos):** Uso obrigatório de no mínimo **3 agentes diferentes** (sendo obrigatoriamente **1 agente dedicado a teste e validação**), documentando em qual *harness* operaram e relacionando as *skills* na pasta `skills/`.
+## 1. Harness utilizado
+- **Harness:** opencode (terminal) para o desenvolvimento.
+- **Modelo(s):** [o modelo que o opencode e o Copilot mostram nas configurações]
+- **Como foi usado:** um agente por tarefa, com prompts que mandam ler as skills pelo caminho em skills/.
 
-## 1. Ambiente de Orquestração (Harness Utilizado)
+## 2. Agentes
+### Agente 1: Backend (Functions, D1 e sessão)
+- **Skills:** skills/serverless-d1-discord, skills/cloudflare
+- **O que fez:** migração 0002_kanban.sql, rotas /api/cards, validação no servidor e sessão assinada com HMAC (functions/api/_lib/session.js).
 
-- **Harness Principal:** *(Descreva aqui qual harness foi utilizado, ex: Antigravity / Claude Code / Cursor / Cline / GitHub Copilot Workspace / OpenHands)*
-- **Modelo(s) Base:** *(Informe os modelos utilizados pelos agentes)*
-- **Estratégia de Coordenação:** Os agentes operaram de forma modular sobre a subpasta `P26-2C-7C14-BF94-17E7-8463/`, compartilhando especificações de banco de dados D1, contratos JSON das Cloudflare Pages Functions e verificação automatizada via `validar-local.mjs`.
+### Agente 2: Interface (HTML, CSS e Vanilla JS)
+- **Skills:** skills/vanilla-dom-ui, skills/frontend-design
+- **O que fez:** quadro com três colunas, cabeçalho com perfil do Discord e rodapé com a chave.
 
----
+### Agente 3: Kanban (Drag and Drop e integração com a API)
+- **Skills:** skills/kanban-drag-drop
+- **O que fez:** arrastar e soltar nativo e chamadas PATCH ao servidor.
 
-## 2. Agentes Criados e Responsabilidades (Mínimo de 3 Agentes)
+### Agente 4: Testes e validação (não edita arquivos)
+- **Skills:** skills/teste-validacao
+- **O que fez:** auditoria de segurança e relatório [resumir o resultado].
 
-### Agente 1: Arquiteto Serverless, Cloudflare D1 e Segurança Discord OAuth2
-- **Papel:** Modelagem do esquema relacional SQLite no Cloudflare D1 (`migrations/0001_init.sql`), implementação do fluxo de autenticação Discord OAuth2 e validação das regras de negócio no servidor (`functions/`).
-- **Skill Utilizada:** [`skills/serverless-d1-discord/SKILL.md`](./skills/serverless-d1-discord/SKILL.md)
-- **Entregas Realizadas:**
-  - Estruturação das tabelas e índices no Cloudflare D1.
-  - Proteção das rotas serverless contra manipulação no cliente.
+## 3. Testes executados
+[testes reais e resultados: login, POST 201, GET 200, coluna inválida 400, id inexistente 404, cookie adulterado 401, sem login 401, arrastar persistindo]
 
-### Agente 2: Especialista em Interface Web Vanilla (HTML5, CSS3 e DOM)
-- **Papel:** Construção da interface responsiva e acessível utilizando exclusivamente HTML5 semântico, CSS3 moderno (sem sombras em fontes) e JavaScript puro (Vanilla JS), consumindo as rotas serverless via `fetch`.
-- **Skill Utilizada:** [`skills/vanilla-dom-ui/SKILL.md`](./skills/vanilla-dom-ui/SKILL.md)
-- **Entregas Realizadas:**
-  - Componentes visuais em `public/index.html`, `public/styles.css` e `public/app.js`.
-  - Inclusão do cabeçalho de perfil do Discord (`user_id`, nome e avatar) e rodapé oficial com a Chave Única `P26-2C-7C14-BF94-17E7-8463`.
-
-### Agente 3: Agente de Teste, Auditoria de Segurança e Validação (Obrigatório)
-- **Papel:** Verificação independente de ponta a ponta: inspeção de contratos de API, tentativa de contorno das validações do servidor, auditoria da rubrica de 100 pontos e execução de testes funcionais.
-- **Skill Utilizada:** [`skills/teste-validacao/SKILL.md`](./skills/teste-validacao/SKILL.md)
-- **Entregas Realizadas:**
-  - Bateria de verificação de integridade dos endpoints e conformidade com a rubrica (`validar-local.mjs` e casos de teste documentados abaixo).
-  - Relatório de validação confirmando ausência de frameworks proibidos, presença da licença MIT e funcionamento no Cloudflare.
+## 4. Origem das skills de terceiros
+- frontend-design: github.com/anthropics/skills [licença do LICENSE.txt da pasta]
+- cloudflare: github.com/cloudflare/skills [licença do arquivo da pasta]
