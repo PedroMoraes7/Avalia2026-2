@@ -6,6 +6,10 @@
   padding: 0;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 :root {
   --ink: #16202f;
   --ink-soft: #46566c;
@@ -166,6 +170,20 @@ button:focus-visible {
   color: var(--muted);
   font-size: 0.68rem;
   font-variant-numeric: tabular-nums;
+  max-width: 16ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.discord-avatar--fallback {
+  display: inline-grid;
+  place-items: center;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
 .login-btn {
@@ -429,6 +447,240 @@ main {
   text-align: center;
 }
 
+/* Ações do cartão */
+
+.card-actions {
+  display: flex;
+  gap: 0.45rem;
+  margin-top: 0.7rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--line);
+}
+
+.card-action {
+  min-height: 28px;
+  padding: 0 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #f7f9fc;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.card-action:hover {
+  border-color: var(--line-strong);
+  background: #eef2f8;
+}
+
+.card-action--danger {
+  border-color: #f0cfcc;
+  background: #fdf1f0;
+  color: #a12820;
+}
+
+.card-action--danger:hover {
+  background: #fbe3e1;
+}
+
+.kanban-card.is-editing {
+  border-color: var(--accent);
+  outline: 3px solid rgba(49, 85, 231, 0.22);
+  outline-offset: 1px;
+}
+
+.card-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.55rem;
+}
+
+.card-edit-form .field-input {
+  min-height: 34px;
+  font-size: 0.84rem;
+}
+
+.card-edit-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.card-edit-actions .primary-btn {
+  min-height: 32px;
+  padding: 0 0.7rem;
+  font-size: 0.72rem;
+}
+
+.card-edit-actions .card-action {
+  min-height: 32px;
+}
+
+.card-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.7rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--line);
+}
+
+.card-confirm-text {
+  margin-right: auto;
+  color: #97231b;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* Formulário de criação */
+
+.card-form {
+  margin-bottom: 1.4rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.card-form h2 {
+  margin-bottom: 0.65rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.card-form-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px auto;
+  gap: 0.7rem;
+  align-items: end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.field-label {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.field-input {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.88rem;
+}
+
+.field-input:focus-visible {
+  border-color: var(--accent);
+  outline: 3px solid rgba(49, 85, 231, 0.35);
+  outline-offset: 1px;
+}
+
+select.field-input {
+  padding-right: 0.35rem;
+}
+
+.primary-btn {
+  min-height: 40px;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.primary-btn:hover {
+  background: var(--accent-ink);
+}
+
+.primary-btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* Mensagens e chamada de login */
+
+.app-status {
+  margin-bottom: 1.4rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.app-status--carregando {
+  border-color: #c9d6f8;
+  background: #eef3ff;
+  color: #243fbd;
+}
+
+.app-status--erro {
+  border-color: #f3b7b2;
+  background: #fdecea;
+  color: #97231b;
+}
+
+.app-status--sucesso {
+  border-color: #b6e7d5;
+  background: #e8f7f0;
+  color: #0c5f44;
+}
+
+.login-prompt {
+  max-width: 620px;
+  margin: 2rem auto;
+  padding: 2.4rem 1.6rem;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.login-prompt h1 {
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.login-prompt p {
+  max-width: 44ch;
+  margin: 0.8rem auto 0;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.login-prompt .login-btn {
+  margin-top: 1.4rem;
+}
+
 /* Rodapé */
 
 footer {
@@ -483,6 +735,14 @@ footer code {
   .board-date {
     margin-top: 0;
   }
+
+  .card-form-fields {
+    grid-template-columns: minmax(0, 1fr) 150px;
+  }
+
+  .card-form-fields .primary-btn {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 600px) {
@@ -523,6 +783,14 @@ footer code {
 
   .kanban-column {
     padding: 0.8rem;
+  }
+
+  .card-form-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .card-form-fields .primary-btn {
+    grid-column: auto;
   }
 }
 
