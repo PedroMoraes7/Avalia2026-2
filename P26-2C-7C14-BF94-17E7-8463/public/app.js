@@ -5,6 +5,13 @@
   const PRIORIDADES = ["baixa", "media", "alta"];
   const TIPO_DADOS_CARTAO = "text/plain";
   const TITULO_MAX_CARACTERES = 120;
+  const TEMA_CHAVE = "quadro-kanban:tema";
+
+  const NOMES_COLUNA = {
+    "a-fazer": "A Fazer",
+    "em-execucao": "Em Execução",
+    concluido: "Concluído",
+  };
 
   const prioridadeTexto = {
     baixa: "baixa",
@@ -36,6 +43,92 @@
   const selectNovaPrioridadeEl = document.getElementById("novaPrioridade");
   const botaoCriarEl = document.getElementById("criarCartaoBtn");
   const quadroEl = document.querySelector(".kanban-board");
+  const temaBtnEl = document.getElementById("themeToggle");
+  const temaTextoEl = document.getElementById("themeToggleText");
+
+  /* ------------------------------------------------------------------ */
+  /* Tema claro/escuro                                                   */
+  /* ------------------------------------------------------------------ */
+
+  function lerTemaSalvo() {
+    try {
+      const valor = window.localStorage.getItem(TEMA_CHAVE);
+      return valor === "dark" || valor === "light" ? valor : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function salvarTema(tema) {
+    try {
+      window.localStorage.setItem(TEMA_CHAVE, tema);
+    } catch {
+      /* Armazenamento indisponível: o tema continua valendo nesta página. */
+    }
+  }
+
+  function temaDoSistema() {
+    try {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    } catch {
+      return "light";
+    }
+  }
+
+  function aplicarTema(tema, opcoes = {}) {
+    const alvo = tema === "dark" ? "dark" : "light";
+    const escuro = alvo === "dark";
+
+    document.documentElement.setAttribute("data-theme", alvo);
+
+    if (temaBtnEl) {
+      const rotulo = escuro ? "Ativar modo claro" : "Ativar modo escuro";
+      temaBtnEl.setAttribute("aria-pressed", escuro ? "true" : "false");
+      temaBtnEl.setAttribute("aria-label", rotulo);
+      temaBtnEl.title = rotulo;
+      if (temaTextoEl) temaTextoEl.textContent = rotulo;
+    }
+
+    if (opcoes.persistir) salvarTema(alvo);
+  }
+
+  function alternarTema() {
+    const atual =
+      document.documentElement.getAttribute("data-theme") === "dark"
+        ? "dark"
+        : "light";
+
+    aplicarTema(atual === "dark" ? "light" : "dark", { persistir: true });
+  }
+
+  function observarTemaDoSistema() {
+    let consulta = null;
+
+    try {
+      consulta = window.matchMedia("(prefers-color-scheme: dark)");
+    } catch {
+      return;
+    }
+
+    if (!consulta) return;
+
+    const aoMudar = (evento) => {
+      // Uma escolha salva sempre vence a preferência do sistema.
+      if (lerTemaSalvo()) return;
+      aplicarTema(evento.matches ? "dark" : "light");
+    };
+
+    if (typeof consulta.addEventListener === "function") {
+      consulta.addEventListener("change", aoMudar);
+    } else if (typeof consulta.addListener === "function") {
+      consulta.addListener(aoMudar);
+    }
+  }
+
+  aplicarTema(lerTemaSalvo() || temaDoSistema());
+  observarTemaDoSistema();
 
   /* ------------------------------------------------------------------ */
   /* Mensagens e estado de carregamento                                  */
@@ -51,17 +144,32 @@
 
     if (!statusEl) return;
 
-    statusEl.textContent = texto || "";
-    statusEl.className = "app-status" + (tipo ? " app-status--" + tipo : "");
-    statusEl.hidden = !texto;
+    if (!texto) {
+      statusEl.textContent = "";
+      statusEl.className = "app-status";
+      statusEl.setAttribute("role", "status");
+      statusEl.setAttribute("aria-live", "polite");
+      statusEl.hidden = true;
+      statusEl.removeAttribute("aria-busy");
+      return;
+    }
 
-    if (ariaBusy && texto) {
+    const erro = tipo === "erro";
+
+    statusEl.className = "app-status app-status--" + tipo;
+    statusEl.setAttribute("role", erro ? "alert" : "status");
+    statusEl.setAttribute("aria-live", erro ? "assertive" : "polite");
+
+    if (ariaBusy) {
       statusEl.setAttribute("aria-busy", "true");
     } else {
       statusEl.removeAttribute("aria-busy");
     }
 
-    if (texto && autoLimpar) {
+    statusEl.hidden = false;
+    statusEl.textContent = texto;
+
+    if (autoLimpar) {
       mensagemTimer = window.setTimeout(() => {
         mensagemTimer = null;
         definirMensagem("", "info");
@@ -168,7 +276,10 @@
   function mostrarInicial(nome) {
     const letra = (nome.trim().charAt(0) || "?").toLocaleUpperCase("pt-BR");
 
-    if (avatarEl) avatarEl.hidden = true;
+    if (avatarEl) {
+      avatarEl.alt = "";
+      avatarEl.hidden = true;
+    }
     if (avatarFallbackEl) {
       avatarFallbackEl.textContent = letra;
       avatarFallbackEl.hidden = false;
@@ -191,7 +302,7 @@
     const url = urlAvatar(dados);
     if (url && avatarEl) {
       if (avatarFallbackEl) avatarFallbackEl.hidden = true;
-      avatarEl.alt = "Foto de " + nome;
+      avatarEl.alt = "Foto de perfil de " + nome + " no Discord";
       avatarEl.hidden = false;
       avatarEl.src = url;
     } else {
@@ -510,6 +621,7 @@
 
     renderizarQuadro();
     definirMensagem("Cartão atualizado.", "sucesso", { autoLimpar: true });
+    focarCartao(cartao.id, "editar");
   }
 
   function abrirEdicao(elemento, cartao) {
@@ -562,6 +674,10 @@
     botaoCancelar.type = "button";
     botaoCancelar.className = "card-action";
     botaoCancelar.textContent = "Cancelar";
+    botaoCancelar.setAttribute(
+      "aria-label",
+      "Cancelar edição do cartão: " + cartao.titulo
+    );
     botaoCancelar.addEventListener("click", () => renderizarQuadro());
 
     acoes.append(botaoSalvar, botaoCancelar);
@@ -585,7 +701,7 @@
     inputTitulo.select();
   }
 
-  async function excluirCartao(cartao) {
+  async function excluirCartao(cartao, opcoes = {}) {
     if (operacaoEmAndamento) return;
 
     operacaoEmAndamento = true;
@@ -613,6 +729,13 @@
     renderizarQuadro();
 
     definirMensagem("Cartão apagado.", "sucesso", { autoLimpar: true });
+
+    // Quem apagou pelo teclado perde o botão de confirmação: devolve o foco
+    // para o formulário de criação, em vez de mandar o foco para o início.
+    if (opcoes.viaTeclado && inputNovoTituloEl) {
+      inputNovoTituloEl.focus();
+    }
+
     await sincronizarCartoes();
   }
 
@@ -632,20 +755,31 @@
     botaoConfirmar.type = "button";
     botaoConfirmar.className = "card-action card-action--danger";
     botaoConfirmar.textContent = "Confirmar";
+    botaoConfirmar.setAttribute(
+      "aria-label",
+      "Confirmar exclusão do cartão: " + cartao.titulo
+    );
 
     const botaoCancelar = document.createElement("button");
     botaoCancelar.type = "button";
     botaoCancelar.className = "card-action";
     botaoCancelar.textContent = "Cancelar";
+    botaoCancelar.setAttribute(
+      "aria-label",
+      "Cancelar exclusão do cartão: " + cartao.titulo
+    );
     botaoCancelar.addEventListener("click", () => renderizarQuadro());
 
-    botaoConfirmar.addEventListener("click", async () => {
+    botaoConfirmar.addEventListener("click", async (evento) => {
+      const viaTeclado = evento.detail === 0;
       botaoConfirmar.disabled = true;
       botaoCancelar.disabled = true;
-      await excluirCartao(cartao);
+      await excluirCartao(cartao, { viaTeclado });
     });
 
     grupo.append(texto, botaoConfirmar, botaoCancelar);
+    grupo.setAttribute("role", "group");
+    grupo.setAttribute("aria-label", "Confirmação de exclusão");
 
     const acoes = elemento.querySelector(".card-actions");
     if (acoes) {
@@ -653,6 +787,10 @@
     } else {
       elemento.appendChild(grupo);
     }
+
+    // Sem isso, o foco cai no <body> quando os botões do cartão são
+    // substituídos. Vai para "Cancelar" (ação segura) para o teclado seguir.
+    botaoCancelar.focus();
   }
 
   function aoClicarNoQuadro(event) {
@@ -674,6 +812,10 @@
       abrirEdicao(elemento, cartao);
     } else if (acao === "apagar") {
       pedirConfirmacaoExclusao(elemento, cartao);
+    } else if (acao === "mover-esquerda") {
+      moverCartaoPorPasso(cartao, -1, acao);
+    } else if (acao === "mover-direita") {
+      moverCartaoPorPasso(cartao, 1, acao);
     }
   }
 
@@ -681,16 +823,29 @@
   /* Renderização                                                        */
   /* ------------------------------------------------------------------ */
 
+  function criarBotaoAcao(acao, texto, rotulo, extra, desabilitado) {
+    const botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = extra ? "card-action " + extra : "card-action";
+    botao.dataset.action = acao;
+    botao.textContent = texto;
+    botao.setAttribute("aria-label", rotulo);
+    botao.disabled = Boolean(desabilitado);
+    return botao;
+  }
+
   function criarElementoCartao(cartao) {
-    const artigo = document.createElement("article");
-    artigo.className = "kanban-card";
-    artigo.dataset.id = String(cartao.id);
-    artigo.dataset.prioridade = cartao.prioridade;
-    artigo.draggable = true;
-    artigo.title = "Arraste para mover de coluna ou reordenar";
+    const item = document.createElement("li");
+    item.className = "kanban-card";
+    item.dataset.id = String(cartao.id);
+    item.dataset.prioridade = cartao.prioridade;
+    item.draggable = true;
+    item.tabIndex = -1;
+    item.title = "Arraste para mover de coluna ou reordenar";
 
     const titulo = document.createElement("h3");
     titulo.className = "kanban-card-title";
+    titulo.id = "cartao-titulo-" + cartao.id;
     titulo.textContent = cartao.titulo;
 
     const meta = document.createElement("div");
@@ -709,30 +864,53 @@
 
     meta.append(rotulo, pill);
 
-    const acoes = document.createElement("div");
-    acoes.className = "card-actions";
+    const indiceColuna = COLUNAS.indexOf(cartao.coluna);
+    const destinoEsquerda = COLUNAS[indiceColuna - 1];
+    const destinoDireita = COLUNAS[indiceColuna + 1];
 
-    const botaoEditar = document.createElement("button");
-    botaoEditar.type = "button";
-    botaoEditar.className = "card-action";
-    botaoEditar.dataset.action = "editar";
-    botaoEditar.textContent = "Editar";
-    botaoEditar.setAttribute("aria-label", "Editar cartão: " + cartao.titulo);
+    const botaoEsquerda = criarBotaoAcao(
+      "mover-esquerda",
+      "← Mover",
+      "Mover para a esquerda",
+      "card-action--move",
+      !destinoEsquerda
+    );
+    botaoEsquerda.setAttribute("aria-describedby", titulo.id);
+    botaoEsquerda.title = destinoEsquerda
+      ? "Mover para " + NOMES_COLUNA[destinoEsquerda]
+      : "Este cartão já está na primeira coluna";
 
-    const botaoApagar = document.createElement("button");
-    botaoApagar.type = "button";
-    botaoApagar.className = "card-action card-action--danger";
-    botaoApagar.dataset.action = "apagar";
-    botaoApagar.textContent = "Apagar";
-    botaoApagar.setAttribute(
-      "aria-label",
-      "Apagar cartão: " + cartao.titulo
+    const botaoDireita = criarBotaoAcao(
+      "mover-direita",
+      "Mover →",
+      "Mover para a direita",
+      "card-action--move",
+      !destinoDireita
+    );
+    botaoDireita.setAttribute("aria-describedby", titulo.id);
+    botaoDireita.title = destinoDireita
+      ? "Mover para " + NOMES_COLUNA[destinoDireita]
+      : "Este cartão já está na última coluna";
+
+    const botaoEditar = criarBotaoAcao(
+      "editar",
+      "Editar",
+      "Editar cartão: " + cartao.titulo
     );
 
-    acoes.append(botaoEditar, botaoApagar);
+    const botaoApagar = criarBotaoAcao(
+      "apagar",
+      "Apagar",
+      "Apagar cartão: " + cartao.titulo,
+      "card-action--danger"
+    );
 
-    artigo.append(titulo, meta, acoes);
-    return artigo;
+    const acoes = document.createElement("div");
+    acoes.className = "card-actions";
+    acoes.append(botaoEsquerda, botaoDireita, botaoEditar, botaoApagar);
+
+    item.append(titulo, meta, acoes);
+    return item;
   }
 
   function renderizarQuadro() {
@@ -750,7 +928,7 @@
       });
 
       if (itens.length === 0) {
-        const vazio = document.createElement("p");
+        const vazio = document.createElement("li");
         vazio.className = "column-empty";
         vazio.textContent = "Nenhuma tarefa por aqui.";
         fragmento.appendChild(vazio);
@@ -763,10 +941,12 @@
       const coluna = contador.getAttribute("data-count");
       const total = cartoesDaColuna(coluna).length;
       contador.textContent = String(total);
-      contador.setAttribute(
-        "aria-label",
-        total + (total === 1 ? " tarefa" : " tarefas")
-      );
+    });
+
+    document.querySelectorAll("[data-count-label]").forEach((rotulo) => {
+      const coluna = rotulo.getAttribute("data-count-label");
+      const total = cartoesDaColuna(coluna).length;
+      rotulo.textContent = total + (total === 1 ? " tarefa" : " tarefas");
     });
 
     if (boardTotalEl) boardTotalEl.textContent = String(cartoes.length);
@@ -782,6 +962,28 @@
     }).format(new Date());
 
     todayLabelEl.textContent = texto.charAt(0).toUpperCase() + texto.slice(1);
+  }
+
+  function focarCartao(id, acao) {
+    const elemento = document.querySelector(
+      '.kanban-card[data-id="' + id + '"]'
+    );
+    if (!elemento) return;
+
+    const tentativas = [acao, "mover-esquerda", "mover-direita", "editar"];
+
+    for (const nome of tentativas) {
+      if (!nome) continue;
+      const botao = elemento.querySelector(
+        'button[data-action="' + nome + '"]'
+      );
+      if (botao && !botao.disabled) {
+        botao.focus();
+        return;
+      }
+    }
+
+    elemento.focus();
   }
 
   /* ------------------------------------------------------------------ */
@@ -877,6 +1079,95 @@
     limparDestaques();
   }
 
+  /**
+   * Único ponto de movimentação: usado pelo arrastar e soltar e pelos botões
+   * de teclado. Sempre persiste com PATCH /api/cards/:id.
+   */
+  async function moverCartao(cartao, colunaDestino, indiceDestino, opcoes = {}) {
+    if (!cartao || !usuario) return;
+    if (operacaoEmAndamento) return;
+    if (!COLUNAS.includes(colunaDestino)) return;
+
+    const acaoFoco = typeof opcoes.foco === "string" ? opcoes.foco : "";
+    const id = cartao.id;
+
+    const listaDestino = cartoesDaColuna(colunaDestino).filter(
+      (item) => item.id !== id
+    );
+    const indice = Math.max(0, Math.min(indiceDestino, listaDestino.length));
+
+    if (cartao.coluna === colunaDestino && cartao.posicao === indice) return;
+
+    const estadoAnterior = cartoes.map((item) => ({ ...item }));
+
+    moverLocalmente(cartao, colunaDestino, indice);
+    renderizarQuadro();
+
+    operacaoEmAndamento = true;
+    definirMensagem("Movendo cartão...", "carregando", { ariaBusy: true });
+
+    const resultado = await chamarApi("/api/cards/" + id, {
+      metodo: "PATCH",
+      corpo: { coluna: colunaDestino, posicao: cartao.posicao },
+    });
+
+    operacaoEmAndamento = false;
+
+    if (resultado.status === 401) {
+      perderSessao();
+      return;
+    }
+
+    if (!resultado.ok) {
+      cartoes = estadoAnterior;
+      renderizarQuadro();
+      definirMensagem(resultado.mensagem, "erro");
+      if (acaoFoco) focarCartao(id, acaoFoco);
+      return;
+    }
+
+    const atualizado =
+      resultado.dados && resultado.dados.card
+        ? normalizarCartao(resultado.dados.card)
+        : null;
+
+    if (atualizado) {
+      const indiceAtual = cartoes.findIndex(
+        (item) => item.id === atualizado.id
+      );
+      if (indiceAtual >= 0) {
+        cartoes[indiceAtual] = atualizado;
+      } else {
+        cartoes.push(atualizado);
+      }
+    }
+
+    renderizarQuadro();
+    definirMensagem(
+      "Cartão movido para " +
+        (NOMES_COLUNA[colunaDestino] || "outra coluna") +
+        ".",
+      "sucesso",
+      { autoLimpar: true }
+    );
+    await sincronizarCartoes();
+    if (acaoFoco) focarCartao(id, acaoFoco);
+  }
+
+  function moverCartaoPorPasso(cartao, passo, acao) {
+    if (operacaoEmAndamento) return;
+
+    const indiceAtual = COLUNAS.indexOf(cartao.coluna);
+    const colunaDestino = COLUNAS[indiceAtual + passo];
+    if (!colunaDestino) return;
+
+    const total = cartoesDaColuna(colunaDestino).filter(
+      (item) => item.id !== cartao.id
+    ).length;
+
+    moverCartao(cartao, colunaDestino, total, { foco: acao });
+  }
+
   async function soltarCartao(event) {
     const colunaEl = elementoDaColuna(event.target);
     if (!colunaEl) return;
@@ -917,63 +1208,12 @@
         indiceDestino = listaDestino.length;
       } else {
         const retangulo = alvoCartao.getBoundingClientRect();
-        const depois =
-          clientY > retangulo.top + retangulo.height / 2;
+        const depois = clientY > retangulo.top + retangulo.height / 2;
         indiceDestino = depois ? indiceAlvo + 1 : indiceAlvo;
       }
     }
 
-    if (
-      cartao.coluna === colunaDestino &&
-      cartao.posicao === indiceDestino
-    ) {
-      return;
-    }
-
-    const estadoAnterior = cartoes.map((item) => ({ ...item }));
-
-    moverLocalmente(cartao, colunaDestino, indiceDestino);
-    renderizarQuadro();
-
-    operacaoEmAndamento = true;
-    definirMensagem("Movendo cartão...", "carregando", { ariaBusy: true });
-
-    const resultado = await chamarApi("/api/cards/" + id, {
-      metodo: "PATCH",
-      corpo: { coluna: colunaDestino, posicao: cartao.posicao },
-    });
-
-    operacaoEmAndamento = false;
-
-    if (resultado.status === 401) {
-      perderSessao();
-      return;
-    }
-
-    if (!resultado.ok) {
-      cartoes = estadoAnterior;
-      renderizarQuadro();
-      definirMensagem(resultado.mensagem, "erro");
-      return;
-    }
-
-    const atualizado =
-      resultado.dados && resultado.dados.card
-        ? normalizarCartao(resultado.dados.card)
-        : null;
-
-    if (atualizado) {
-      const indice = cartoes.findIndex((item) => item.id === atualizado.id);
-      if (indice >= 0) {
-        cartoes[indice] = atualizado;
-      } else {
-        cartoes.push(atualizado);
-      }
-    }
-
-    renderizarQuadro();
-    definirMensagem("Cartão movido.", "sucesso", { autoLimpar: true });
-    await sincronizarCartoes();
+    moverCartao(cartao, colunaDestino, indiceDestino);
   }
 
   /* ------------------------------------------------------------------ */
@@ -994,6 +1234,7 @@
 
     if (avatarEl) avatarEl.addEventListener("error", aoFalharAvatar);
     if (logoutBtnEl) logoutBtnEl.addEventListener("click", aoSair);
+    if (temaBtnEl) temaBtnEl.addEventListener("click", alternarTema);
   }
 
   async function iniciar() {

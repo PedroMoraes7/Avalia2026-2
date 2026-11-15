@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="Quadro Kanban pessoal com três colunas, integrado ao Discord.">
   <title>Quadro Kanban Pessoal — P26-2C-7C14-BF94-17E7-8463</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
@@ -19,24 +22,37 @@
       </div>
 
       <div class="account">
-        <div class="discord-profile" id="discordProfile" aria-label="Perfil do Discord" hidden>
-          <img class="discord-avatar" id="discordAvatar" alt="" width="32" height="32" hidden>
+        <div class="discord-profile" id="discordProfile" role="group" aria-label="Perfil do Discord" hidden>
+          <img class="discord-avatar" id="discordAvatar" alt="" width="36" height="36" hidden>
           <span class="discord-avatar discord-avatar--fallback" id="discordAvatarFallback" aria-hidden="true" hidden></span>
           <span class="discord-meta">
             <strong class="discord-name" id="discordUserName"></strong>
             <span class="discord-id" id="discordUserId"></span>
           </span>
         </div>
+
         <button class="logout-btn" id="discordLogoutBtn" type="button" hidden>Sair</button>
         <a class="login-btn" id="discordLoginLink" href="/api/auth/discord" hidden>Entrar com Discord</a>
+
+        <button
+          class="theme-toggle"
+          id="themeToggle"
+          type="button"
+          aria-pressed="false"
+          aria-label="Ativar modo escuro"
+          title="Ativar modo escuro">
+          <span class="theme-icon" aria-hidden="true"></span>
+          <span class="theme-toggle-text" id="themeToggleText">Ativar modo escuro</span>
+        </button>
       </div>
     </div>
   </header>
 
-  <main>
-    <div class="app-status" id="appStatus" role="status" aria-live="polite" hidden></div>
+  <main id="conteudo">
+    <div class="app-status" id="appStatus" role="status" aria-live="polite" aria-atomic="true" hidden></div>
 
     <section class="login-prompt" id="loginPrompt" aria-labelledby="loginPromptTitle" hidden>
+      <p class="eyebrow">Bem-vindo</p>
       <h1 id="loginPromptTitle">Seu quadro começa aqui</h1>
       <p>Entre com o Discord para ver, criar, editar e mover seus cartões. Tudo fica salvo na sua conta.</p>
       <a class="login-btn" href="/api/auth/discord">Entrar com Discord</a>
@@ -45,6 +61,7 @@
     <div id="boardArea" hidden>
       <section class="board-intro" aria-labelledby="boardTitle">
         <div class="intro-copy">
+          <p class="eyebrow">Visão geral</p>
           <h1 id="boardTitle">Meu quadro</h1>
           <p class="lede">Um panorama simples do que precisa ser feito, do que está em andamento e do que já foi concluído.</p>
         </div>
@@ -88,9 +105,12 @@
               <span class="column-dot" aria-hidden="true"></span>
               <h2 id="a-fazer-titulo">A Fazer</h2>
             </div>
-            <span class="column-count" data-count="a-fazer" aria-label="0 tarefas">0</span>
+            <span class="column-count">
+              <span aria-hidden="true" data-count="a-fazer">0</span>
+              <span class="sr-only" data-count-label="a-fazer">0 tarefas</span>
+            </span>
           </header>
-          <div class="card-list" data-column="a-fazer"></div>
+          <ul class="card-list" data-column="a-fazer" role="list"></ul>
         </section>
 
         <section class="kanban-column" id="em-execucao" aria-labelledby="em-execucao-titulo">
@@ -99,9 +119,12 @@
               <span class="column-dot" aria-hidden="true"></span>
               <h2 id="em-execucao-titulo">Em Execução</h2>
             </div>
-            <span class="column-count" data-count="em-execucao" aria-label="0 tarefas">0</span>
+            <span class="column-count">
+              <span aria-hidden="true" data-count="em-execucao">0</span>
+              <span class="sr-only" data-count-label="em-execucao">0 tarefas</span>
+            </span>
           </header>
-          <div class="card-list" data-column="em-execucao"></div>
+          <ul class="card-list" data-column="em-execucao" role="list"></ul>
         </section>
 
         <section class="kanban-column" id="concluido" aria-labelledby="concluido-titulo">
@@ -110,9 +133,12 @@
               <span class="column-dot" aria-hidden="true"></span>
               <h2 id="concluido-titulo">Concluído</h2>
             </div>
-            <span class="column-count" data-count="concluido" aria-label="0 tarefas">0</span>
+            <span class="column-count">
+              <span aria-hidden="true" data-count="concluido">0</span>
+              <span class="sr-only" data-count-label="concluido">0 tarefas</span>
+            </span>
           </header>
-          <div class="card-list" data-column="concluido"></div>
+          <ul class="card-list" data-column="concluido" role="list"></ul>
         </section>
       </div>
     </div>
