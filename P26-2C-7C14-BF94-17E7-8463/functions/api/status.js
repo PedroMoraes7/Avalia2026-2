@@ -2,21 +2,17 @@
  * Cloudflare Pages Function — /api/status
  * Verifica conectividade com o Cloudflare D1, sessão Discord OAuth2 e permite registrar pings de diagnóstico.
  */
+
+import { lerSessao } from "./_lib/session.js";
+
 export async function onRequest(context) {
   const { request, env } = context;
   const chave = "P26-2C-7C14-BF94-17E7-8463";
   const projectId = 9;
   const projectTitle = "Quadro Kanban Pessoal";
 
-  // Lê sessão real do Discord a partir do cookie HttpOnly se autenticado
-  const cookieHeader = request.headers.get("Cookie") || "";
-  let sessionUser = null;
-  const sessionMatch = cookieHeader.match(/discord_session=([^;]+)/);
-  if (sessionMatch) {
-    try {
-      sessionUser = JSON.parse(decodeURIComponent(atob(sessionMatch[1])));
-    } catch {}
-  }
+  // Lê a sessão real do Discord validando a assinatura HMAC do cookie HttpOnly.
+  const sessionUser = await lerSessao(request, env);
 
   if (request.method === "GET") {
     let dbConnected = false;

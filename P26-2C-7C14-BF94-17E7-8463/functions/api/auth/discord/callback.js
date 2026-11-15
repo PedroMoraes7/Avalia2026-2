@@ -1,24 +1,68 @@
 /**
  * Cloudflare Pages Function — /api/auth/discord/callback
- * Troca o authorization code pelo token de acesso do Discord, obtém o perfil (@me)
- * e persiste no Cloudflare D1 com cookie de sessão.
+ * Valida o `state` (CSRF), troca o authorization code pelo token de acesso do
+ * Discord, obtém o perfil (@me), persiste no Cloudflare D1 e grava uma sessão
+ * assinada (HMAC-SHA256) no cookie HttpOnly.
  */
+
+import {
+  cookieSessao,
+  criarSessao,
+  estadoValido,
+  limparCookieEstado,
+} from "../../_lib/session.js";
+
+function redirecionar(url, destino, setCookies = []) {
+  const headers = new Headers();
+  headers.set("Location", new URL(destino, url.origin).href);
+  for (const cookie of setCookies) {
+    headers.append("Set-Cookie", cookie);
+  }
+  return new Response(null, { status: 302, headers });
+}
+
+function erroJson(status, erro, mensagem) {
+  const resposta = Response.json(
+    { ok: false, error: erro, message: mensagem },
+    { status }
+  );
+  resposta.headers.append("Set-Cookie", limparCookieEstado());
+  return resposta;
+}
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const error = url.searchParams.get("error");
+  const state = url.searchParams.get("state");
 
   if (error || !code) {
-    return Response.redirect(new URL("/?auth_error=" + encodeURIComponent(error || "missing_code"), url.origin).href, 302);
+    return redirecionar(url, "/?auth_error=" + encodeURIComponent(error || "missing_code"), [
+      limparCookieEstado(),
+    ]);
+  }
+
+  // CSRF: o `state` recebido precisa bater com o cookie curto criado em
+  // /api/auth/discord. Sem isso, o `code` NUNCA é trocado.
+  if (!estadoValido(request, state)) {
+    return redirecionar(url, "/?auth_error=invalid_state", [limparCookieEstado()]);
   }
 
   if (!env.DISCORD_CLIENT_ID || !env.DISCORD_CLIENT_SECRET) {
-    return Response.json({
-      ok: false,
-      error: "missing_credentials",
-      message: "Defina DISCORD_CLIENT_ID e DISCORD_CLIENT_SECRET nas variáveis do Cloudflare Pages (Settings -> Environment variables).",
-    }, { status: 500 });
+    return erroJson(
+      500,
+      "missing_credentials",
+      "Defina DISCORD_CLIENT_ID e DISCORD_CLIENT_SECRET nas variáveis do Cloudflare Pages (Settings -> Environment variables)."
+    );
+  }
+
+  if (!env.SESSION_SECRET) {
+    return erroJson(
+      500,
+      "missing_session_secret",
+      "Defina SESSION_SECRET nas variáveis do Cloudflare Pages para assinar a sessão."
+    );
   }
 
   const redirectUri = new URL("/api/auth/discord/callback", url.origin).href;
@@ -37,7 +81,9 @@ export async function onRequestGet(context) {
     });
 
     if (!tokenRes.ok) {
-      return Response.redirect(new URL("/?auth_error=token_exchange_failed", url.origin).href, 302);
+      return redirecionar(url, "/?auth_error=token_exchange_failed", [
+        limparCookieEstado(),
+      ]);
     }
 
     const tokenData = await tokenRes.json();
@@ -46,7 +92,9 @@ export async function onRequestGet(context) {
     });
 
     if (!userRes.ok) {
-      return Response.redirect(new URL("/?auth_error=fetch_user_failed", url.origin).href, 302);
+      return redirecionar(url, "/?auth_error=fetch_user_failed", [
+        limparCookieEstado(),
+      ]);
     }
 
     const discordUser = await userRes.json();
@@ -67,17 +115,13 @@ export async function onRequestGet(context) {
       } catch {}
     }
 
-    const sessionPayload = JSON.stringify({ userId, username, avatar });
-    const encodedSession = btoa(encodeURIComponent(sessionPayload));
+    const sessaoAssinada = await criarSessao(env, { userId, username, avatar });
 
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: "/?login=success",
-        "Set-Cookie": `discord_session=${encodedSession}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400; Secure`,
-      },
-    });
+    return redirecionar(url, "/?login=success", [
+      limparCookieEstado(),
+      cookieSessao(sessaoAssinada),
+    ]);
   } catch (err) {
-    return Response.redirect(new URL("/?auth_error=exception", url.origin).href, 302);
+    return redirecionar(url, "/?auth_error=exception", [limparCookieEstado()]);
   }
 }
